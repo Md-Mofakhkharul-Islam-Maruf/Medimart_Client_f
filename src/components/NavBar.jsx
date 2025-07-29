@@ -1,0 +1,312 @@
+import React, { useContext, useEffect, useState } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { FaCartShopping } from "react-icons/fa6";
+import { IoMdArrowDropdown } from "react-icons/io";
+import logo from "../assets/medimart.png";
+import useAxiosSecure from "./hook/useAxiosSecure";
+import { AuthContext } from "../context/AuthContext";
+import {jwtDecode} from "jwt-decode";
+
+const Navbar = () => {
+  const { signOutUser } = useContext(AuthContext) || {};
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const navigate = useNavigate();
+  const token = localStorage.getItem("accessToken");
+  const axiosSecure = useAxiosSecure();
+
+  console.log(user);
+
+    let decodedToken = null;
+  if (token) {
+    try {
+      decodedToken = jwtDecode(token);
+      console.log("Decoded Token:", decodedToken);
+    } catch (error) {
+      console.error("Invalid token:", error.message);
+    }
+  }
+
+  useEffect(()=>{
+    fetchUser()
+  },[])
+
+  const fetchUser = async () => {
+    try {
+      const response = await axiosSecure.get("/profile");
+
+      console.log(response);
+
+      const result = response.data;
+
+      if (result.success) {
+        setUser(result.data);
+      } else {
+        setError(result.message || "Failed to fetch user data");
+      }
+    } catch (err) {
+      setError(
+        "Error connecting to server: " +
+          (err.response?.data?.message || err.message)
+      );
+      console.error("Axios fetch error:", err);
+    }
+  };
+
+  const loadCartCount = () => {
+    try {
+      const savedCart = localStorage.getItem('medimart_cart');
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        const totalItems = parsedCart.reduce((total, item) => total + item.quantity, 0);
+        setCartItemCount(totalItems);
+      } else {
+        setCartItemCount(0);
+      }
+    } catch (error) {
+      console.error('Error loading cart count:', error);
+      setCartItemCount(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+    loadCartCount();
+
+    // Listen for localStorage changes (when cart is updated)
+    const handleStorageChange = () => {
+      loadCartCount();
+    };
+
+    // Listen for custom cart update events
+    const handleCartUpdate = () => {
+      loadCartCount();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    // Also check cart count periodically in case of same-tab updates
+    const interval = setInterval(loadCartCount, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      clearInterval(interval);
+    };
+  }, []);
+
+  console.log(user);
+
+  const navLinks = (
+    <>
+      <NavLink
+        to="/"
+        className={({ isActive }) =>
+          isActive
+            ? "text-red-600 font-semibold"
+            : "text-gray-700 hover:text-red-600"
+        }
+      >
+        Home
+      </NavLink>
+
+      <NavLink
+        to="/shop"
+        className={({ isActive }) =>
+          isActive
+            ? "text-red-600 font-semibold"
+            : "text-gray-700 hover:text-red-600"
+        }
+      >
+        Shop
+      </NavLink>
+
+      <NavLink
+        to="/cart"
+        className={({ isActive }) =>
+          isActive
+            ? "text-red-600 font-semibold relative"
+            : "text-gray-700 hover:text-red-600 relative"
+        }
+      >
+        <FaCartShopping className="text-xl" />
+        {cartItemCount > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {cartItemCount > 99 ? '99+' : cartItemCount}
+          </span>
+        )}
+      </NavLink>
+    </>
+  );
+
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      // Clear cart on logout if desired
+      // localStorage.removeItem('medimart_cart');
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
+
+
+// const handleDashboardClick = () => {
+//   const token = localStorage.getItem("accessToken");
+//   if (!token) return;
+
+//   try {
+//     const decoded = jwtDecode(token);
+//     const role = decoded?.role;
+
+//     switch (role) {
+//       case "admin":
+//         navigate("/admin/home");
+//         break;
+//       case "seller":
+//         navigate("/seller/home");
+//         break;
+//       case "user":
+//       default:
+//         navigate("/user");
+//     }
+//   } catch (error) {
+//     console.error("Invalid token:", error);
+//   }
+// };
+
+
+const handleDashboardClick = () => {
+
+
+  try {
+   
+    const role = user?.role;
+
+    switch (role) {
+      case "admin":
+        navigate("/admin/home");
+        break;
+      case "seller":
+        navigate("/seller/home");
+        break;
+      case "user":
+      default:
+        navigate("/user");
+    }
+  } catch (error) {
+    console.error("Invalid token:", error);
+  }
+};
+
+
+  return (
+    <nav className="bg-white shadow-md">
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        {/* Left: Logo */}
+        <div className="flex items-center space-x-2">
+          <img src={logo} alt="MediMart" className="h-10" />
+          <span className="text-xl font-bold text-red-600">MediMart</span>
+        </div>
+
+        {/* Center: Menu */}
+        <div className="hidden md:flex space-x-8 items-center">{navLinks}</div>
+
+        {/* Right Side: Language | Auth | Profile */}
+        <div className="flex items-center space-x-6">
+          {/* Language Dropdown */}
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="flex items-center cursor-pointer">
+              <span className="mr-1">Language</span>
+              <IoMdArrowDropdown />
+            </label>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu p-2 shadow bg-white rounded-box w-40"
+            >
+              <li>
+                <a>English</a>
+              </li>
+              <li>
+                <a>বাংলা</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Auth/Profile */}
+          {!token ? (
+            <Link
+              to="/login"
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+            >
+              Join Us
+            </Link>
+          ) : (
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="cursor-pointer">
+                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
+                  {user?.photo ? (
+                    <img
+                      src={user?.photo}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-semibold">
+                      {user?.email?.charAt(0)?.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </label>
+              <ul
+                tabIndex={0}
+                className="dropdown-content menu p-2 shadow bg-white rounded-box w-52"
+              >
+                <li>
+                  <Link to="/update-profile">Update Profile</Link>
+                </li>
+                <li>
+                  <button onClick={handleDashboardClick}>Dashboard</button>
+                </li>
+                <li>
+                  <button onClick={handleLogout}>Logout</button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile: Nav Drawer */}
+        <div className="md:hidden dropdown dropdown-end">
+          <label tabIndex={0} className="btn btn-ghost">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </label>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu p-4 shadow bg-white rounded-box w-60 space-y-4"
+          >
+            {navLinks}
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
