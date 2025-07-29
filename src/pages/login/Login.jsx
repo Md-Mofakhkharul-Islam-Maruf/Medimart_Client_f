@@ -44,9 +44,9 @@ const Login = () => {
       });
 
       const res = await loginRes.json();
-
       if (res?.success) {
-        localStorage.setItem('accessToken', res.accessToken);
+       
+        localStorage.setItem('accessToken', res.data.accessToken);
 
         Swal.fire({
           icon: 'success',

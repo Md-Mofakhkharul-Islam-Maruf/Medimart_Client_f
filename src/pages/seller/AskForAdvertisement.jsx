@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Eye, EyeOff, Edit3, Trash2, X, Loader2 } from 'lucide-react';
 import useAxiosSecure from '../../components/hook/useAxiosSecure';
+import toast from 'react-hot-toast';
 
 const AdvertisementManagement = () => {
   const [banners, setBanners] = useState([]);
@@ -92,7 +93,7 @@ const AdvertisementManagement = () => {
       try {
         await axiosSecure.delete(`/banners/${bannerId}`);
         setBanners(prev => prev.filter(banner => banner._id !== bannerId));
-        alert('Advertisement deleted successfully!');
+        toast.success('Advertisement deleted successfully!');
       } catch (error) {
         console.error('Error deleting banner:', error);
         alert('Failed to delete advertisement');

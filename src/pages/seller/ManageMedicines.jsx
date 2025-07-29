@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAxiosSecure from '../../components/hook/useAxiosSecure';
+import toast from 'react-hot-toast';
 
 const ManageMedicines = () => {
   const [medicines, setMedicines] = useState([]);
@@ -116,7 +117,7 @@ const ManageMedicines = () => {
       setLoading(true);
       setError('');
       
-      const response = await axiosSecure.get('/products');
+      const response = await axiosSecure.get('/my-products');
       if (response.data.success) {
         setMedicines(response.data.data);
       } else {
@@ -285,10 +286,10 @@ const ManageMedicines = () => {
           discount: 0,
         });
 
+        toast.success('Medicine added successfully!');
         setImagePreview(null);
         setShowModal(false);
 
-        alert('Medicine added successfully!');
       } else {
         setError(data?.message || 'Failed to add medicine');
       }

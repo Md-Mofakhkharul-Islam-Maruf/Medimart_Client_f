@@ -99,6 +99,13 @@ const Navbar = () => {
 
   console.log(user);
 
+  // Cart click handler to prevent event bubbling
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate('/cart');
+  };
+
   const navLinks = (
     <>
       <NavLink
@@ -123,6 +130,7 @@ const Navbar = () => {
         Shop
       </NavLink>
 
+      {/* Fixed Cart Navigation with proper NavLink */}
       <NavLink
         to="/cart"
         className={({ isActive }) =>
@@ -130,6 +138,9 @@ const Navbar = () => {
             ? "text-red-600 font-semibold relative"
             : "text-gray-700 hover:text-red-600 relative"
         }
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
       >
         <FaCartShopping className="text-xl" />
         {cartItemCount > 0 && (
@@ -152,56 +163,28 @@ const Navbar = () => {
     }
   };
 
+  const handleDashboardClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
+    try {
+      const role = user?.role;
 
-// const handleDashboardClick = () => {
-//   const token = localStorage.getItem("accessToken");
-//   if (!token) return;
-
-//   try {
-//     const decoded = jwtDecode(token);
-//     const role = decoded?.role;
-
-//     switch (role) {
-//       case "admin":
-//         navigate("/admin/home");
-//         break;
-//       case "seller":
-//         navigate("/seller/home");
-//         break;
-//       case "user":
-//       default:
-//         navigate("/user");
-//     }
-//   } catch (error) {
-//     console.error("Invalid token:", error);
-//   }
-// };
-
-
-const handleDashboardClick = () => {
-
-
-  try {
-   
-    const role = user?.role;
-
-    switch (role) {
-      case "admin":
-        navigate("/admin/home");
-        break;
-      case "seller":
-        navigate("/seller/home");
-        break;
-      case "user":
-      default:
-        navigate("/user");
+      switch (role) {
+        case "admin":
+          navigate("/admin/home");
+          break;
+        case "seller":
+          navigate("/seller/home");
+          break;
+        case "user":
+        default:
+          navigate("/user");
+      }
+    } catch (error) {
+      console.error("Invalid token:", error);
     }
-  } catch (error) {
-    console.error("Invalid token:", error);
-  }
-};
-
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -225,7 +208,7 @@ const handleDashboardClick = () => {
             </label>
             <ul
               tabIndex={0}
-              className="dropdown-content menu p-2 shadow bg-white rounded-box w-40"
+              className="dropdown-content menu p-2 shadow bg-white rounded-box w-40 z-50"
             >
               <li>
                 <a>English</a>
@@ -246,7 +229,11 @@ const handleDashboardClick = () => {
             </Link>
           ) : (
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="cursor-pointer">
+              <label 
+                tabIndex={0} 
+                className="cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
                   {user?.photo ? (
                     <img
@@ -263,16 +250,36 @@ const handleDashboardClick = () => {
               </label>
               <ul
                 tabIndex={0}
-                className="dropdown-content menu p-2 shadow bg-white rounded-box w-52"
+                className="dropdown-content menu p-2 shadow bg-white rounded-box w-52 z-50"
+                onClick={(e) => e.stopPropagation()}
               >
                 <li>
-                  <Link to="/update-profile">Update Profile</Link>
+                  <Link 
+                    to="/update-profile"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Update Profile
+                  </Link>
                 </li>
                 <li>
-                  <button onClick={handleDashboardClick}>Dashboard</button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDashboardClick(e);
+                    }}
+                  >
+                    Dashboard
+                  </button>
                 </li>
                 <li>
-                  <button onClick={handleLogout}>Logout</button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogout();
+                    }}
+                  >
+                    Logout
+                  </button>
                 </li>
               </ul>
             </div>
@@ -299,7 +306,8 @@ const handleDashboardClick = () => {
           </label>
           <ul
             tabIndex={0}
-            className="dropdown-content menu p-4 shadow bg-white rounded-box w-60 space-y-4"
+            className="dropdown-content menu p-4 shadow bg-white rounded-box w-60 space-y-4 z-50"
+            onClick={(e) => e.stopPropagation()}
           >
             {navLinks}
           </ul>

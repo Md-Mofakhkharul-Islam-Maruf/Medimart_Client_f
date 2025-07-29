@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { EyeIcon } from '@heroicons/react/24/outline';
 import useAxiosSecure from '../../components/hook/useAxiosSecure';
+import toast from 'react-hot-toast';
 
 const ShopPage = () => {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
@@ -99,7 +100,7 @@ const ShopPage = () => {
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
-      alert(`Increased quantity of "${medicine.name}" in cart.`);
+      toast.success(`Increased quantity of "${medicine.name}" in cart.`);
     } else {
       const cartItem = {
         id: medicine._id,
@@ -112,7 +113,7 @@ const ShopPage = () => {
         description: medicine.description
       };
       updatedCart = [...cart, cartItem];
-      alert(`Added "${medicine.name}" to cart.`);
+      toast.success(`Added "${medicine.name}" to cart.`);
     }
 
     setCart(updatedCart);

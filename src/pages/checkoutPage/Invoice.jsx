@@ -56,6 +56,7 @@ const InvoicePage = ({ orderData, onBackToShop }) => {
         {/* Header */}
         <div className="bg-blue-500 text-white p-6">
           <div className="flex justify-between items-center">
+            <img src="https://i.ibb.co/93TGmfgw/MediMart.png" alt="logo" className='w-32 h-20'/>
             <div>
               <h1 className="text-3xl font-bold">INVOICE</h1>
               <p className="text-blue-100">MediMart Pharmacy</p>

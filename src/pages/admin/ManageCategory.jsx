@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useAxiosSecure from "../../components/hook/useAxiosSecure";
+import toast from "react-hot-toast";
 
 const ManageCategory = () => {
   const [categories, setCategories] = useState([]);
@@ -81,16 +82,16 @@ const ManageCategory = () => {
     try {
       const res = await axiosSecure.post("/categories", category);
       if (res.data.success) {
-        alert("Category added successfully");
+        toast.success("Category added successfully");
         setNewCategory({ name: "", image: "" }); // Reset form
         setShowAddModal(false); // Close modal
         fetchCategories(); // Refresh the categories list
       } else {
-        alert("Failed to add category");
+        toast.error("Failed to add category");
       }
     } catch (err) {
       console.error(err);
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     }
   };
 
@@ -137,13 +138,13 @@ const ManageCategory = () => {
       if (res.data.success) {
         // Remove from local UI after successful deletion
         setCategories(categories.filter((cat) => cat._id !== id));
-        alert("Category deleted successfully");
+        toast.success("Category deleted successfully");
       } else {
-        alert(res.data.message || "Failed to delete category.");
+        toast.error(res.data.message || "Failed to delete category.");
       }
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Error deleting category: " + err.message);
+      toast.error("Error deleting category: " + err.message);
     }
   };
 

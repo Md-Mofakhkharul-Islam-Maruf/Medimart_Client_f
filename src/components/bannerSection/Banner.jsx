@@ -6,6 +6,7 @@ import {
   Star,
 } from 'lucide-react';
 import useAxiosSecure from '../hook/useAxiosSecure';
+import axios from 'axios';
 
 const SmartBanner = () => {
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,7 @@ const SmartBanner = () => {
       setLoading(true);
       setError('');
 
-      const response = await axiosSecure.get('/banners');
+      const response = await axios.get('https://medimart-server-mu.vercel.app/banners');
       const result = response.data;
       console.log(result);
 

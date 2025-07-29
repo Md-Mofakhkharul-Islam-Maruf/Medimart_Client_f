@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 const axiosSecure = axios.create({
-    baseURL:'https://medimart-server-mu.vercel.app'
+    baseURL:'https://medimart-server-mu.vercel.app/'
 })
 const useAxiosSecure = () => {
     const navigate = useNavigate();
@@ -13,7 +13,7 @@ const useAxiosSecure = () => {
     // request interceptor to add authorization header for every secure call to teh api
     axiosSecure.interceptors.request.use(function (config) {
         const token = localStorage.getItem('accessToken')
-        console.log('request stopped by interceptors', token)
+        // console.log('request stopped by interceptors', token)
         config.headers.Authorization = ` ${token}`;
         return config;
     }, function (error) {
