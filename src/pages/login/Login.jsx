@@ -37,7 +37,7 @@ const Login = () => {
       const result = await signInUser(email, password);
       form.reset();
 
-      const loginRes = await fetch('https://carzoneserver.vercel.app/login', {
+      const loginRes = await fetch('https://medimart-server-mu.vercel.app/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: result.user.email }),
