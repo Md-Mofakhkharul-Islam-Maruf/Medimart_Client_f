@@ -1,23 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import useAxiosSecure from '../hook/useAxiosSecure';
+import toast from 'react-hot-toast';
 
 const CategoryDetailsPage = () => {
-const  {id}  = useParams(); // Get category ID from URL
+  const { id } = useParams(); // Get category ID from URL
   const [medicines, setMedicines] = useState([]);
   const [categoryName, setCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalMedicine, setModalMedicine] = useState(null);
+  const [cart, setCart] = useState([]);
   const axiosSecure = useAxiosSecure();
-  console.log(medicines)
+
+  console.log(medicines);
   console.log(id);
 
   useEffect(() => {
     if (id) {
       fetchMedicinesByCategory();
     }
+    loadCartFromStorage();
   }, [id]);
+
+  const loadCartFromStorage = () => {
+    try {
+      const savedCart = localStorage.getItem('medimart_cart');
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        setCart(parsedCart);
+      }
+    } catch (error) {
+      console.error('Error loading cart from localStorage:', error);
+    }
+  };
+
+  const saveCartToStorage = (cartData) => {
+    try {
+      localStorage.setItem('medimart_cart', JSON.stringify(cartData));
+      // Dispatch custom event to notify other components about cart update
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  };
 
   const fetchMedicinesByCategory = async () => {
     try {
@@ -48,8 +74,40 @@ const  {id}  = useParams(); // Get category ID from URL
   };
 
   const handleSelect = (medicine) => {
-    // Here you can implement actual cart functionality
-    alert(`${medicine.name} added to cart!`);
+    const existingItemIndex = cart.findIndex((item) => item.id === medicine._id);
+    let updatedCart;
+
+    if (existingItemIndex !== -1) {
+      updatedCart = cart.map((item, index) =>
+        index === existingItemIndex
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+      toast.success(`Increased quantity of "${medicine.name}" in cart.`);
+    } else {
+      const cartItem = {
+        id: medicine._id,
+        name: medicine.name,
+        company: medicine.company || medicine.manufacturer,
+        price: medicine.price,
+        quantity: 1,
+        stock: medicine.stock,
+        image: medicine.image || medicine.imageURL,
+        description: medicine.description
+      };
+      updatedCart = [...cart, cartItem];
+      toast.success(`Added "${medicine.name}" to cart.`);
+    }
+
+    setCart(updatedCart);
+    saveCartToStorage(updatedCart);
+  };
+
+  const isInCart = (medicineId) => cart.some((item) => item.id === medicineId);
+  
+  const getCartItemQuantity = (medicineId) => {
+    const item = cart.find((item) => item.id === medicineId);
+    return item ? item.quantity : 0;
   };
 
   if (loading) {
@@ -88,9 +146,7 @@ const  {id}  = useParams(); // Get category ID from URL
                 <th className="p-3">Image</th>
                 <th className="p-3">Name</th>
                 <th className="p-3">Manufacturer</th>
-                {/* <th className="p-3">Shop</th> */}
                 <th className="p-3">Price</th>
-                {/* <th className="p-3">Stock</th> */}
                 <th className="p-3 text-center">Actions</th>
               </tr>
             </thead>
@@ -113,16 +169,22 @@ const  {id}  = useParams(); // Get category ID from URL
                   </td>
                   <td className="p-2 font-semibold">{med.name}</td>
                   <td className="p-2">{med.company}</td>
-                  {/* <td className="p-2">{med.shopName || med.shop}</td> */}
                   <td className="p-2">৳{med.price}</td>
-                  {/* <td className="p-2">{med.stock}</td> */}
                   <td className="p-2 mt-4 flex items-center justify-center gap-2">
-                    {/* <button
+                    <button
                       onClick={() => handleSelect(med)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded px-3 py-1"
+                      className={`text-white px-3 py-1 rounded transition ${
+                        isInCart(med._id)
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                      title={isInCart(med._id) ? "Add more to cart" : "Add to cart"}
+                      style={{ minWidth: '80px' }}
                     >
-                      Select
-                    </button> */}
+                      {isInCart(med._id)
+                        ? `Added (${getCartItemQuantity(med._id)})`
+                        : "Select"}
+                    </button>
                     <button
                       onClick={() => setModalMedicine(med)}
                       className="bg-blue-500 hover:bg-blue-600 text-white rounded px-3 py-1"
@@ -158,12 +220,30 @@ const  {id}  = useParams(); // Get category ID from URL
             />
             <p><strong>Type:</strong> {modalMedicine.type}</p>
             <p><strong>Manufacturer:</strong> {modalMedicine.manufacturer}</p>
-            {/* <p><strong>Shop:</strong> {modalMedicine.shopName || modalMedicine.shop}</p> */}
             <p><strong>Price:</strong> ৳{modalMedicine.price}</p>
-            {/* <p><strong>Stock:</strong> {modalMedicine.stock}</p> */}
             {modalMedicine.description && (
               <p className="mt-2">{modalMedicine.description}</p>
             )}
+            
+            {/* Add to Cart button in modal */}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => {
+                  handleSelect(modalMedicine);
+                  setModalMedicine(null); // Close modal after adding to cart
+                }}
+                className={`text-white px-4 py-2 rounded transition ${
+                  isInCart(modalMedicine._id)
+                    ? "bg-green-500 hover:bg-green-600"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+                style={{ minWidth: '120px' }}
+              >
+                {isInCart(modalMedicine._id)
+                  ? `Added (${getCartItemQuantity(modalMedicine._id)})`
+                  : "Add to Cart"}
+              </button>
+            </div>
           </div>
         </div>
       )}
