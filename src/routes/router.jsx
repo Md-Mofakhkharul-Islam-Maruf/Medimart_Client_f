@@ -102,7 +102,7 @@ export const router = createBrowserRouter([
             {
                 path: '/cart',
                 element: (
-                    <PrivateRoute allowedRoles={['user']}>
+                    <PrivateRoute allowedRoles={['user','admin','seller']}>
                         <CartPage />
                     </PrivateRoute>
                 )
@@ -111,7 +111,7 @@ export const router = createBrowserRouter([
             {
                 path: '/checkout',
                 element: (
-                    <PrivateRoute allowedRoles={['user']}>
+                    <PrivateRoute allowedRoles={['user','admin','seller']}>
                         <CheckoutPage />
                     </PrivateRoute>
                 )
