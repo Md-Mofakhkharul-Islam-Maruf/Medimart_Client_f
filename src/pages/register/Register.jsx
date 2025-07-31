@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 import useAxiosSecure from '../../components/hook/useAxiosSecure';
 import Lottie from 'lottie-react';
 import register from '../../assets/register.json';
+import SocialLogin from '../socialLogin/SocialLogin';
 
 // ImgBB API configuration
 const IMGBB_API_KEY = 'ea59a5c9204f19d69a83ea436c243017';
@@ -20,6 +21,7 @@ const IMGBB_API_URL = 'https://api.imgbb.com/1/upload';
 const Register = () => {
   const { createUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const from = location.state?.from?.pathname || '/';
   const axiosSecure = useAxiosSecure();
   const [loading, setLoading] = useState(false);
 
@@ -328,22 +330,25 @@ const Register = () => {
 
             <div className="divider">OR</div>
 
-            <button
+            {/* <button
               type="button"
               onClick={() => handleSocialLogin(new GoogleAuthProvider())}
               className="btn btn-outline w-full"
               disabled={loading}
             >
               Continue with Google
-            </button>
-            <button
+            </button> */}
+
+            
+            <SocialLogin from={from} disabled={loading} />
+            {/* <button
               type="button"
               onClick={() => handleSocialLogin(new GithubAuthProvider())}
               className="btn btn-outline w-full mt-2"
               disabled={loading}
             >
               Continue with GitHub
-            </button>
+            </button> */}
           </form>
         </div>
       </div>
