@@ -201,7 +201,7 @@ const Navbar = () => {
         {/* Right Side: Language | Auth | Profile */}
         <div className="flex items-center space-x-6">
           {/* Language Dropdown */}
-          <div className="dropdown dropdown-end">
+          {/* <div className="dropdown dropdown-end">
             <label tabIndex={0} className="flex items-center cursor-pointer">
               <span className="mr-1">Language</span>
               <IoMdArrowDropdown />
@@ -217,7 +217,7 @@ const Navbar = () => {
                 <a>বাংলা</a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Auth/Profile */}
           {!token ? (
